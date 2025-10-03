@@ -7,11 +7,11 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(`https://api.securitytrails.com/v1/domain/${domain}/subdomains`, {
-      headers: {
-        "Accept": "application/json",
-        "Authorization": `Bearer ${process.env.SECURITYTRAILS_API_KEY}`
-      },
-    });
+  headers: {
+    "Accept": "application/json",
+    "apikey": process.env.SECURITYTRAILS_API_KEY
+  }
+});
 
     if (!response.ok) {
       const errorText = await response.text();
