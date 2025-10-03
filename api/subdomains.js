@@ -1,21 +1,33 @@
 export default async function handler(req, res) {
   const { domain } = req.query;
-  const apiKey = process.env.SECURITYTRAILS_API_KEY;
 
-  if (!domain) return res.status(400).json({ error: "Domain required" });
+  if (!domain) {
+    return res.status(400).json({ error: "Domain is required" });
+  }
 
   try {
-    const response = await fetch(
-      `https://api.securitytrails.com/v1/domain/${domain}/subdomains?children_only=false`,
-      {
-        headers: { "APIKEY": apiKey }
-      }
-    );
-    if (!response.ok) throw new Error(`API error ${response.status}`);
+    const response = await fetch(`https://api.securitytrails.com/v1/domain/${domain}/subdomains`, {
+      headers: {
+        "Accept": "application/json",
+        "Authorization": `Bearer ${process.env.SECURITYTRAILS_API_KEY}`
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return res.status(response.status).json({ error: errorText });
+    }
+
     const data = await response.json();
-    res.status(200).json(data.subdomains || []);
-  } catch (err) {
-    console.error("Subdomain error:", err);
+    res.status(200).json({ subdomains: data.subdomains || [] });
+
+  } catch (error) {
+    console.error("Error fetching subdomains:", error);
     res.status(500).json({ error: "Error fetching subdomains" });
   }
 }
+
+// Force Node.js runtime, not Edge
+export const config = {
+  runtime: "nodejs",
+};
