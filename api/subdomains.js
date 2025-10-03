@@ -2,36 +2,39 @@
 
 export default async function handler(req, res) {
   const { domain } = req.query;
-
-  if (!domain) {
-    return res.status(400).json({ error: "Domain is required" });
-  }
+  if (!domain) return res.status(400).json({ error: "Domain is required" });
 
   try {
-    const response = await fetch(
+    // Try SecurityTrails first
+    const stResponse = await fetch(
       `https://api.securitytrails.com/v1/domain/${domain}/subdomains`,
-      {
-        headers: {
-          "Accept": "application/json",
-          "apikey": process.env.SECURITYTRAILS_API_KEY, // ✅ correct format
-        },
-      }
+      { headers: { "apikey": process.env.SECURITYTRAILS_API_KEY } }
     );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      return res
-        .status(response.status)
-        .json({ error: `SecurityTrails API error: ${errorText}` });
+    if (stResponse.ok) {
+      const data = await stResponse.json();
+      const subdomains = data.subdomains?.map(s => `${s}.${domain}`) || [];
+      return res.status(200).json({ subdomains });
     }
 
-    const data = await response.json();
+    // 🔄 Fallback: crt.sh (certificate transparency logs)
+    const crtResponse = await fetch(
+      `https://crt.sh/?q=%25.${domain}&output=json`
+    );
+    if (crtResponse.ok) {
+      const crtData = await crtResponse.json();
+      const subdomains = [...new Set(
+        crtData.map(entry => entry.name_value)
+          .join("\n")
+          .split("\n")
+          .filter(name => name.includes(domain))
+      )];
+      return res.status(200).json({ subdomains });
+    }
 
-    // The API returns { subdomains: [ ... ] }
-    const subdomains = data.subdomains?.map((sub) => `${sub}.${domain}`) || [];
+    res.status(500).json({ error: "No subdomains found" });
 
-    res.status(200).json({ subdomains });
-  } catch (error) {
-    res.status(500).json({ error: "Error fetching subdomains", details: error.message });
+  } catch (err) {
+    res.status(500).json({ error: "Error fetching subdomains", details: err.message });
   }
 }
