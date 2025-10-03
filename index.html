@@ -162,7 +162,7 @@
       try {
         const res = await fetch(`/api/subdomains?domain=${encodeURIComponent(domain)}`);
         const arr = await res.json();
-        subsResult.textContent = arr.length? arr.join("\n"): "No subdomains found.";
+        subsResult.textContent = arr.length ? arr.join(", ") : "No subdomains found.";
       } catch(e) {
         subsResult.textContent = "Error fetching subdomains.";
       }
