@@ -1,351 +1,201 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Cyber Tools — Terminal</title>
-
-  <!-- Hacker / Terminal style -->
-  <style>
-    :root{
-      --bg:#020204;
-      --panel: rgba(0,0,0,0.75);
-      --accent:#00ff66;
-      --accent-dim:#0bb36b;
-      --muted:#7dffb0;
-      --glass: rgba(255,255,255,0.02);
-    }
-
-    html,body{height:100%;margin:0;background:
-      radial-gradient(ellipse at 10% 10%, rgba(0,255,100,0.02), transparent 10%),
-      linear-gradient(180deg,#001 0%,var(--bg) 50%);
-      color:var(--accent); font-family: "SFMono-Regular","Courier New",monospace; -webkit-font-smoothing:antialiased;
-    }
-
-    /* layout */
-    .wrap{max-width:1000px;margin:28px auto;padding:20px;}
-    header{display:flex;align-items:center;gap:14px;padding:14px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.3));box-shadow:0 0 30px rgba(0,255,102,0.03), inset 0 1px 0 rgba(255,255,255,0.02);border:1px solid rgba(0,255,102,0.06)}
-    .logo {font-size:20px; font-weight:700; text-shadow:0 0 8px rgba(0,255,102,0.06);}
-    .subtitle {font-size:12px;color:var(--muted);margin-left:auto}
-
-    /* main panel */
-    main{display:grid;grid-template-columns: 360px 1fr; gap:18px;margin-top:18px;}
-    .panel{background:var(--panel);border-radius:10px;padding:16px;border:1px solid rgba(0,255,102,0.06);box-shadow:0 6px 24px rgba(0,0,0,0.6)}
-    .controls label{display:block;margin:10px 0 6px;color:var(--muted);font-size:13px}
-    select,input[type="text"],textarea{width:100%;padding:10px;border-radius:6px;background:#060606;border:1px solid rgba(0,255,102,0.06);color:var(--accent);box-sizing:border-box;font-family:inherit}
-    .btn{display:inline-block;padding:8px 12px;border-radius:6px;background:transparent;border:1px solid var(--accent);color:var(--accent);cursor:pointer;font-weight:600;text-transform:uppercase;letter-spacing:0.6px}
-    .btn:active{transform:translateY(1px)}
-    .btn.primary{background:linear-gradient(90deg,rgba(0,255,102,0.06),rgba(11,179,107,0.06));border-color:var(--accent-dim)}
-
-    /* terminal output */
-    .terminal{background:#000;border-radius:8px;padding:12px;height:420px;overflow:auto;border:1px solid rgba(0,255,102,0.06)}
-    .line{white-space:pre-wrap;font-size:13px;line-height:1.45;color:var(--accent)}
-    .muted{color:var(--muted);font-size:12px}
-    .result{background:linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.2));padding:10px;border-radius:6px;margin-top:10px;border:1px solid rgba(0,255,102,0.03);color:var(--accent);white-space:pre-wrap}
-
-    /* strength bar */
-    .strength{height:10px;background:#021202;border-radius:6px;overflow:hidden;border:1px solid rgba(0,255,102,0.05)}
-    .strength-bar{height:100%;width:0%;transition:width .35s ease}
-
-    /* pills for subdomains */
-    .subs-line{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-    .pill{background:rgba(0,255,102,0.06);border:1px solid rgba(0,255,102,0.09);padding:6px 10px;border-radius:999px;color:var(--accent);font-size:13px;cursor:pointer}
-    .pill:hover{background:rgba(0,255,102,0.12)}
-
-    footer{grid-column:1/-1;margin-top:16px;color:var(--muted);font-size:12px;text-align:center}
-
-    /* responsive */
-    @media (max-width:940px){main{grid-template-columns:1fr;}.terminal{height:320px}}
-    @media (max-width:520px){.logo{font-size:18px}}
-    /* typing caret */
-    .caret{display:inline-block; width:9px; background:var(--accent); margin-left:6px; animation:blink 1s steps(2) infinite}
-    @keyframes blink{50%{opacity:0}}
-
-    /* subtle flicker for header */
-    @keyframes softflicker{0%{opacity:1}60%{opacity:0.94}100%{opacity:1}}
-    header{animation:softflicker 3s infinite}
-  </style>
+<meta charset="UTF-8">
+<title>Cyber Tools</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { background:#0d0d0d; color:#0fff00; font-family:'Courier New', monospace; margin:0; padding:0; }
+  header, footer { background:#111; text-align:center; padding:1rem; color:#0fff00; }
+  main { max-width:800px; margin:2rem auto; background:#000; padding:2rem; border-radius:12px; box-shadow:0 0 10px #0fff00; }
+  label { display:block; margin:1rem 0 .3rem; font-weight:bold; }
+  input, select, button, textarea { padding:.5rem; font-size:1rem; width:100%; margin-bottom:1rem; background:#111; color:#0fff00; border:1px solid #0fff00; }
+  button:hover { background:#0fff00; color:#111; cursor:pointer; }
+  .hidden { display:none; }
+  .result { background:#000; color:#0fff00; border:1px solid #0fff00; padding:1rem; border-radius:8px; overflow:auto; max-height:300px; }
+  .subdomain-pill { display:inline-block; background:#111; color:#0fff00; padding:.2rem .5rem; margin:.1rem; border-radius:3px; cursor:pointer; }
+  .subdomain-pill:hover { background:#0fff00; color:#111; }
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="logo">cyber tools ▸ terminal</div>
-      <div class="subtitle">  Version 1.0</div>
-    </header>
+<header><h1>🛡️ Cyber Tools</h1></header>
+<main>
+<label for="toolSelect">Choose a Tool:</label>
+<select id="toolSelect">
+  <option value="hash">Hash Detector</option>
+  <option value="password">Password Generator</option>
+  <option value="subdomains">Subdomain Finder</option>
+</select>
 
-    <main>
-      <!-- left: controls -->
-      <section class="panel controls" aria-label="controls">
-        <label for="toolSelect">Select tool</label>
-        <select id="toolSelect" aria-label="Choose tool">
-          <option value="hash">Hash Detector</option>
-          <option value="password">Password Generator</option>
-          <option value="subdomains">Subdomain Finder</option>
-        </select>
+<!-- Hash Detector -->
+<div id="hash" class="tool">
+  <label for="hashInput">Enter hash value:</label>
+  <input id="hashInput" type="text" placeholder="Paste hash here...">
+  <button id="detectHash">Detect Hash</button>
+  <div id="hashResult" class="result"></div>
+</div>
 
-        <!-- HASH -->
-        <div id="hash" class="tool-block" data-tool="hash">
-          <label for="hashInput">Enter hash</label>
-          <input id="hashInput" type="text" placeholder="e.g. 5d41402abc4b2a76b9719d911017c592">
-          <button id="detectHash" class="btn primary" style="margin-top:8px">Detect</button>
-        </div>
+<!-- Password Generator -->
+<div id="password" class="tool hidden">
+  <label>Password Length: <span id="lenDisplay">12</span></label>
+  <input id="passLen" type="range" min="6" max="32" value="12">
+  <label><input id="incUpper" type="checkbox" checked> Include Uppercase</label>
+  <label><input id="incNums" type="checkbox" checked> Include Numbers</label>
+  <label><input id="incSyms" type="checkbox" checked> Include Symbols</label>
+  <button id="genPass">Generate Password</button>
+  <div id="passResult" class="result"></div>
+  <div class="strength"><div id="strengthBar" class="strength-bar"></div></div>
+  <button id="checkPwned">Check if Pwned</button>
+  <div id="pwnedResult" class="result"></div>
+</div>
 
-        <!-- PASSWORD -->
-        <div id="password" class="tool-block" data-tool="password" hidden>
-          <label>Password length <span id="lenDisplay" class="muted">12</span></label>
-          <input id="passLen" type="range" min="6" max="32" value="12" />
-          <label><input id="incUpper" type="checkbox" checked> Include Uppercase</label>
-          <label><input id="incNums" type="checkbox" checked> Include Numbers</label>
-          <label><input id="incSyms" type="checkbox" checked> Include Symbols</label>
-          <button id="genPass" class="btn primary">Generate</button>
-          <div class="strength" style="margin-top:8px"><div id="strengthBar" class="strength-bar" style="background:linear-gradient(90deg,var(--accent),var(--accent-dim));"></div></div>
-          <button id="checkPwned" class="btn" style="margin-top:8px">Check Pwned</button>
-        </div>
+<!-- Subdomain Finder -->
+<div id="subdomains" class="tool hidden">
+  <label for="domainInput">Enter domain:</label>
+  <input id="domainInput" type="text" placeholder="example.com">
+  <button id="findSubs">Find Subdomains</button>
+  <div id="subsResult" class="result"></div>
+</div>
 
-        <!-- SUBDOMAINS -->
-        <div id="subdomains" class="tool-block" data-tool="subdomains" hidden>
-          <label for="domainInput">Domain</label>
-          <input id="domainInput" type="text" placeholder="example.com">
-          <button id="findSubs" class="btn primary" style="margin-top:8px">Find Subdomains</button>
-        </div>
+<button id="exportBtn">Export Results</button>
+</main>
+<footer>&copy; 2025 Cyber Tools — Use responsibly. Only scan domains you own.</footer>
 
-        <div style="margin-top:12px">
-          <button id="exportBtn" class="btn">Export Results</button>
-        </div>
-      </section>
+<script>
+const toolSelect = document.getElementById('toolSelect');
+const tools = document.querySelectorAll('.tool');
+const hashInput = document.getElementById('hashInput');
+const hashResult = document.getElementById('hashResult');
+const detectHash = document.getElementById('detectHash');
+const passLen = document.getElementById('passLen');
+const lenDisplay = document.getElementById('lenDisplay');
+const incUpper = document.getElementById('incUpper');
+const incNums = document.getElementById('incNums');
+const incSyms = document.getElementById('incSyms');
+const genPass = document.getElementById('genPass');
+const passResult = document.getElementById('passResult');
+const strengthBar = document.getElementById('strengthBar');
+const checkPwned = document.getElementById('checkPwned');
+const pwnedResult = document.getElementById('pwnedResult');
+const domainInput = document.getElementById('domainInput');
+const findSubs = document.getElementById('findSubs');
+const subsResult = document.getElementById('subsResult');
+const exportBtn = document.getElementById('exportBtn');
 
-      <!-- right: terminal -->
-      <section class="panel">
-        <div class="terminal" id="terminal" role="log" aria-live="polite">
-          <div class="line">Welcome to Cyber Tools terminal.<span class="caret" aria-hidden="true"></span></div>
-          <div class="line muted" id="hint">Select a tool and interact. Outputs appear below.</div>
-          <div id="out" style="margin-top:10px"></div>
-        </div>
+let generatedPassword = "";
 
-        <div class="result" id="resultsBox" style="margin-top:12px;display:none"></div>
+// Hash patterns
+const hashPatterns = [
+  { regex:/^[a-f0-9]{32}$/i, name:"MD5", desc:"Fast, insecure" },
+  { regex:/^[a-f0-9]{40}$/i, name:"SHA-1", desc:"Broken, avoid" },
+  { regex:/^[a-f0-9]{64}$/i, name:"SHA-256", desc:"Strong, widely used" },
+  { regex:/^[a-f0-9]{128}$/i, name:"SHA-512", desc:"Strong, widely used" },
+  { regex:/^\$2[aby]\$.{56}$/, name:"bcrypt", desc:"Modern secure hash" },
+  { regex:/^\$argon2(?:id|i|d)\$.+/i, name:"Argon2", desc:"Modern secure hash" }
+];
 
-        <footer>© 2025 Cyber Tools — free toolkit</footer>
-      </section>
-    </main>
-  </div>
+// Switch tools
+function switchTool(tool) {
+  tools.forEach(t => t.classList.add('hidden'));
+  document.getElementById(tool).classList.remove('hidden');
+}
+toolSelect.addEventListener('change', () => switchTool(toolSelect.value));
 
-  <!-- Behavior script -->
-  <script>
-  (function(){
-    // Elements
-    const toolSelect = document.getElementById('toolSelect');
-    const blocks = document.querySelectorAll('.tool-block');
-    const terminal = document.getElementById('terminal');
-    const out = document.getElementById('out');
-    const resultsBox = document.getElementById('resultsBox');
+// Hash detector
+detectHash.addEventListener('click', () => {
+  const input = hashInput.value.trim();
+  const match = hashPatterns.find(p => p.regex.test(input));
+  hashResult.textContent = match ? `Looks like: ${match.name} – ${match.desc}` : "Unknown hash type.";
+});
 
-    // Hash controls
-    const hashInput = document.getElementById('hashInput');
-    const detectHash = document.getElementById('detectHash');
+// Password generator
+passLen.addEventListener('input', () => lenDisplay.textContent = passLen.value);
+genPass.addEventListener('click', () => {
+  const len = +passLen.value;
+  let chars = "abcdefghijklmnopqrstuvwxyz";
+  if (incUpper.checked) chars += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  if (incNums.checked) chars += "0123456789";
+  if (incSyms.checked) chars += "!@#$%^&*()_-+=<>?";
+  let pwd = "";
+  for (let i=0;i<len;i++) pwd += chars[Math.floor(Math.random()*chars.length)];
+  generatedPassword = pwd;
+  passResult.textContent = "Generated: " + pwd;
+  const strength = Math.min(100,(len/32*100)+(incUpper.checked+incNums.checked+incSyms.checked)*10);
+  strengthBar.style.width = strength + "%";
+  strengthBar.style.background = strength>70?"green":strength>40?"orange":"red";
+});
 
-    // Password controls
-    const passLen = document.getElementById('passLen');
-    const lenDisplay = document.getElementById('lenDisplay');
-    const incUpper = document.getElementById('incUpper');
-    const incNums = document.getElementById('incNums');
-    const incSyms = document.getElementById('incSyms');
-    const genPass = document.getElementById('genPass');
-    const checkPwned = document.getElementById('checkPwned');
-    const strengthBar = document.getElementById('strengthBar');
+// SHA-1 for HIBP
+async function sha1(msg) {
+  const buf = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
 
-    // Subdomain controls
-    const domainInput = document.getElementById('domainInput');
-    const findSubs = document.getElementById('findSubs');
-
-    const exportBtn = document.getElementById('exportBtn');
-
-    let generatedPassword = '';
-
-    // Patterns for hashes
-    const hashPatterns = [
-      { regex:/^[a-f0-9]{32}$/i, name:"MD5", desc:"Fast, insecure" },
-      { regex:/^[a-f0-9]{40}$/i, name:"SHA-1", desc:"Broken, avoid" },
-      { regex:/^[a-f0-9]{64}$/i, name:"SHA-256", desc:"Strong, widely used" },
-      { regex:/^[a-f0-9]{128}$/i, name:"SHA-512", desc:"Strong, widely used" },
-      { regex:/^\$2[aby]\$.{56}$/, name:"bcrypt", desc:"Modern secure hash" },
-      { regex:/^\$argon2(?:id|i|d)\$.+/i, name:"Argon2", desc:"Modern secure hash" }
-    ];
-
-    // helper: print to terminal with typing effect (fast)
-    function printLine(text, cls='line'){
-      const el = document.createElement('div');
-      el.className = cls;
-      el.textContent = text;
-      out.appendChild(el);
-      terminal.scrollTop = terminal.scrollHeight;
-      return el;
+// Check if password pwned
+checkPwned.addEventListener('click', async () => {
+  if (!generatedPassword) return alert("Generate a password first");
+  const hash = (await sha1(generatedPassword)).toUpperCase();
+  const prefix = hash.slice(0,5), suffix = hash.slice(5);
+  try {
+    const res = await fetch(`/api/pwned-range/${prefix}`);
+    const text = await res.text();
+    const lines = text.split("\n").map(l=>l.trim()).filter(Boolean);
+    const found = lines.find(l => l.split(":")[0] === suffix);
+    if (found) {
+      const count = found.split(":")[1];
+      pwnedResult.textContent = `⚠️ Found in ${count} breaches! Do not use.`;
+    } else {
+      pwnedResult.textContent = "✅ Not found in known breaches.";
     }
+  } catch(e) {
+    pwnedResult.textContent = "Error checking breach database.";
+  }
+});
 
-    // helper to set results box
-    function showResult(text){
-      resultsBox.style.display = text ? 'block' : 'none';
-      resultsBox.textContent = text;
-    }
-
-    // switch UI
-    function switchTool(tool){
-      blocks.forEach(b=> b.hidden = (b.dataset.tool !== tool));
-      printLine(`> switched to ${tool} tool`, 'line muted');
-      showResult('');
-    }
-
-    toolSelect.addEventListener('change', ()=> switchTool(toolSelect.value));
-
-    // Hash detect
-    detectHash.addEventListener('click', ()=>{
-      const v = hashInput.value.trim();
-      if(!v){ alert('Enter a hash value'); return; }
-      const match = hashPatterns.find(p=> p.regex.test(v));
-      const text = match ? `Detected: ${match.name} — ${match.desc}` : 'Unknown hash format';
-      printLine(`hash: ${v}`, 'line');
-      printLine(text, 'line muted');
-      showResult(text);
+// Subdomain finder
+findSubs.addEventListener('click', async () => {
+  const domain = domainInput.value.trim();
+  if (!domain) return;
+  subsResult.textContent = "Searching...";
+  try {
+    const res = await fetch(`/api/subdomains?domain=${encodeURIComponent(domain)}`);
+    const arr = await res.json();
+    subsResult.innerHTML = "";
+    if(arr.length === 0) { subsResult.textContent = "No subdomains found."; return; }
+    arr.slice(0,50).forEach(sub => {
+      const pill = document.createElement("span");
+      pill.textContent = sub;
+      pill.className = "subdomain-pill";
+      pill.onclick = () => navigator.clipboard.writeText(sub);
+      subsResult.appendChild(pill);
     });
+    if(arr.length>50) subsResult.appendChild(document.createTextNode(` ...and ${arr.length-50} more`));
+  } catch(e) {
+    subsResult.textContent = "Error fetching subdomains.";
+  }
+});
 
-    // Password generator
-    passLen.addEventListener('input', ()=> lenDisplay.textContent = passLen.value);
-    genPass.addEventListener('click', ()=>{
-      const len = +passLen.value;
-      let chars = "abcdefghijklmnopqrstuvwxyz";
-      if(incUpper.checked) chars += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-      if(incNums.checked) chars += "0123456789";
-      if(incSyms.checked) chars += "!@#$%^&*()_-+=<>?";
-      let pwd = "";
-      for(let i=0;i<len;i++) pwd += chars[Math.floor(Math.random()*chars.length)];
-      generatedPassword = pwd;
-      printLine(`generated: ${pwd}`, 'line');
-      // compute simple strength metric
-      const strength = Math.min(100, Math.round((len/32*100) + (incUpper.checked?15:0) + (incNums.checked?15:0) + (incSyms.checked?20:0)));
-      strengthBar.style.width = strength + '%';
-      showResult(`Password: ${pwd}\nStrength: ${strength}%`);
-    });
+// Export results
+exportBtn.addEventListener('click', () => {
+  let content = "";
+  if (hashResult.textContent) content += "Hash Result: " + hashResult.textContent + "\n";
+  if (generatedPassword) {
+    const include = confirm("Include password in export file?");
+    content += include? "Password: "+generatedPassword+"\n":"Password: [REDACTED]\n";
+    content += "Strength: "+strengthBar.style.width+"\n";
+  }
+  if (pwnedResult.textContent) content += "Pwned Check: "+pwnedResult.textContent+"\n";
+  if (subsResult.textContent) content += "Subdomains:\n"+subsResult.textContent.replace(/\n/g,"")+"\n";
+  const blob = new Blob([content], {type:"text/plain"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "cybertools.txt";
+  a.click();
+});
 
-    // sha1 helper (for HIBP style)
-    async function sha1(msg){
-      const buf = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(msg));
-      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-    }
-
-    checkPwned.addEventListener('click', async ()=>{
-      if(!generatedPassword) return alert('Generate a password first');
-      printLine('Checking HIBP (k-anonymity) ...', 'line muted');
-      try{
-        const h = (await sha1(generatedPassword)).toUpperCase();
-        const prefix = h.slice(0,5);
-        // NOTE: uses your API route; keep same API path or change accordingly
-        const res = await fetch(`/api/pwned-range/${prefix}`);
-        if(!res.ok) throw new Error('Network error');
-        const txt = await res.text();
-        const found = txt.split('\n').map(l=>l.trim()).find(l => l.split(':')[0] === h.slice(5));
-        if(found){
-          const count = found.split(':')[1];
-          printLine(`PWNED: found in ${count} breaches!`, 'line');
-          showResult(`⚠️ Found in ${count} breaches — DO NOT USE.`);
-        } else {
-          printLine('Not found in known breaches.', 'line muted');
-          showResult('✅ Not found in known breaches.');
-        }
-      }catch(err){
-        printLine('Error: '+err.message, 'line muted');
-        showResult('Error checking pwned service.');
-      }
-    });
-
-    // Subdomain finder — displays comma-separated line AND pills
-    findSubs.addEventListener('click', async ()=>{
-      const domain = domainInput.value.trim();
-      if(!domain) return alert('Enter domain');
-      printLine(`subdomain search: ${domain}`, 'line');
-      printLine('Searching...', 'line muted');
-      try{
-        const res = await fetch(`/api/subdomains?domain=${encodeURIComponent(domain)}`);
-        if(!res.ok) throw new Error('Fetch failed');
-        const arr = await res.json();
-        // show in one line separated by commas
-        const oneLine = arr.length ? arr.join(', ') : 'No subdomains found.';
-        // present as pill UI as well
-        const container = document.createElement('div');
-        container.className = 'subs-line';
-        if(arr.length){
-          arr.forEach(s=>{
-            const p = document.createElement('span');
-            p.className = 'pill';
-            p.textContent = s;
-            p.title = 'Click to copy';
-            p.addEventListener('click', ()=> {
-              navigator.clipboard?.writeText(s);
-              p.textContent = s + ' ✓';
-              setTimeout(()=> p.textContent = s, 1200);
-            });
-            container.appendChild(p);
-          });
-        } else {
-          const empty = document.createElement('div');
-          empty.className = 'muted';
-          empty.textContent = 'No subdomains found.';
-          container.appendChild(empty);
-        }
-        // render to terminal and results box
-        showResult('Subdomains: ' + oneLine);
-        // also append to terminal (clear previous subs)
-        const prev = document.getElementById('subs-output');
-        if(prev) prev.remove();
-        const outDiv = document.createElement('div');
-        outDiv.id = 'subs-output';
-        outDiv.appendChild(document.createTextNode(oneLine));
-        out.appendChild(outDiv);
-        // add pills block in resultsBox below the text
-        resultsBox.innerHTML = '';
-        const heading = document.createElement('div');
-        heading.className = 'muted';
-        heading.textContent = 'Subdomains (click to copy):';
-        resultsBox.appendChild(heading);
-        resultsBox.appendChild(container);
-        resultsBox.style.display = 'block';
-      }catch(err){
-        printLine('Error searching subdomains: '+err.message, 'line muted');
-        showResult('Error fetching subdomains.');
-      }
-    });
-
-    // Export results as text file
-    exportBtn.addEventListener('click', ()=>{
-      let content = '';
-      const lines = out.querySelectorAll('.line');
-      lines.forEach(l => content += l.textContent + '\n');
-      if(resultsBox.textContent) content += '\n' + resultsBox.textContent + '\n';
-      const includePwd = confirm('Include generated password in export (if any)?');
-      if(!includePwd && generatedPassword) content = content.replace(generatedPassword, '[REDACTED]');
-      const blob = new Blob([content], {type:'text/plain'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'cybertools-output.txt';
-      a.click();
-    });
-
-    // init: set default tool
-    switchTool(toolSelect.value);
-
-    // keyboard: quick toggle 1/2/3
-    window.addEventListener('keydown', (e)=>{
-      if(e.key==='1') { toolSelect.value='hash'; toolSelect.dispatchEvent(new Event('change')) }
-      if(e.key==='2') { toolSelect.value='password'; toolSelect.dispatchEvent(new Event('change')) }
-      if(e.key==='3') { toolSelect.value='subdomains'; toolSelect.dispatchEvent(new Event('change')) }
-    });
-
-    // small UX: focus input when switching
-    toolSelect.addEventListener('change', ()=>{
-      const visible = document.querySelector('.tool-block:not([hidden])');
-      const firstInput = visible.querySelector('input,select,button');
-      firstInput?.focus();
-    });
-
-  })();
-  </script>
+// Init
+lenDisplay.textContent = passLen.value;
+switchTool(toolSelect.value);
+</script>
 </body>
 </html>
