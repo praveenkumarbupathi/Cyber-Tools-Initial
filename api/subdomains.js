@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 export default async function handler(req, res) {
   const { domain } = req.query;
   const apiKey = process.env.SECURITYTRAILS_API_KEY;
@@ -13,9 +11,11 @@ export default async function handler(req, res) {
         headers: { "APIKEY": apiKey }
       }
     );
+    if (!response.ok) throw new Error(`API error ${response.status}`);
     const data = await response.json();
     res.status(200).json(data.subdomains || []);
   } catch (err) {
+    console.error("Subdomain error:", err);
     res.status(500).json({ error: "Error fetching subdomains" });
   }
 }
